@@ -1,6 +1,4 @@
 import React, { Component } from 'react';
-import { BrowserRouter, Route } from 'react-router-dom';
-import { Link } from 'react-router-dom';
 import Tweets from './components/tweets';
 import './App.css';
 

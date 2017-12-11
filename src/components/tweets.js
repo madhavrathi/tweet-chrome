@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
+import $ from 'jquery';
 import { Tabs } from 'antd';
-import { Modal, Button, Form, Input, Icon, Divider, Checkbox } from 'antd';
-const FormItem = Form.Item;
+import { Modal, Button, Divider, Checkbox, List, } from 'antd';
 const CheckboxGroup = Checkbox.Group;
 
-let uuid = 0;
 
 class tweets extends Component {
   constructor(props) {
@@ -12,8 +11,14 @@ class tweets extends Component {
     this.state = {
       loading: false,
       visible: false,
-      checked: ''
+      checked: '',
+      current_handles: ['mdhvrthi'],
+      removed_handles: [],
+      new_handles: [],
+      newvalue: ''
     };
+  }
+  componentDidMount() {
   }
   showModal = () => {
     this.setState({
@@ -22,6 +27,20 @@ class tweets extends Component {
   }
   handleOk = () => {
     this.setState({ loading: true });
+    console.log('New: '+this.state.new_handles);
+    console.log('Removed: '+this.state.removed_handles);
+    $.ajax({
+            url: 'https://twitter-chrome-server.herokuapp.com/handles',
+            method: 'GET',
+            dataType: 'json',
+            data: {
+                'new_handles': this.state.new_handles,
+                'removed_handles': this.state.removed_handles
+            }
+        }).done(function (response) {
+            console.log(response);
+        })
+
     setTimeout(() => {
       this.setState({ loading: false, visible: false });
     }, 3000);
@@ -30,51 +49,21 @@ class tweets extends Component {
     this.setState({ visible: false });
   }
   onChange = (checkedValues) => {
-    console.log(checkedValues)
     this.setState({checked: checkedValues});
-  }
-  componentDidMount() {
   }
 
   //Form Controls
-  remove = (k) => {
-    const { form } = this.props;
-    // can use data-binding to get
-    const keys = form.getFieldValue('keys');
-    // We need at least one handle
-    if (keys.length === 1) {
-      return;
+  handleAdd = (e) => {
+    var { newvalue, current_handles, new_handles  } = this.state;
+    if(newvalue !== ''){
+      new_handles.push(newvalue);
+      current_handles.push(newvalue);
+      this.setState({current_handles,new_handles,newvalue:''});
     }
-
-    // can use data-binding to set
-    form.setFieldsValue({
-      keys: keys.filter(key => key !== k),
-    });
   }
-
-  add = () => {
-    uuid++;
-    const { form } = this.props;
-    // can use data-binding to get
-    const keys = form.getFieldValue('keys');
-    const nextKeys = keys.concat(uuid);
-    // can use data-binding to set
-    // important! notify form to detect changes
-    form.setFieldsValue({
-      keys: nextKeys,
-    });
+  handleValue = (e) => {
+    this.setState({newvalue: e.target.value});
   }
-
-  handleSubmit = (e) => {
-    e.preventDefault();
-    this.props.form.validateFields((err, values) => {
-      if (!err) {
-        console.log('Received values of form: ', values);
-      }
-    });
-  }
-
-
 
   render() {
 
@@ -82,58 +71,8 @@ class tweets extends Component {
     const plainOptions = ['Text', 'Images', 'Text with Images'];
     const TabPane = Tabs.TabPane;
     const operations = <Button onClick={this.showModal}>Settings</Button>;
-
-    const { getFieldDecorator, getFieldValue } = this.props.form;
-
-    const formItemLayout = {
-      labelCol: {
-        xs: { span: 24 },
-        sm: { span: 4 },
-      },
-      wrapperCol: {
-        xs: { span: 24 },
-        sm: { span: 20 },
-      },
-    };
-    const formItemLayoutWithOutLabel = {
-      wrapperCol: {
-        xs: { span: 24, offset: 0 },
-        sm: { span: 20, offset: 4 },
-      },
-    };
-
-    getFieldDecorator('keys', { initialValue: [] });
-    const keys = getFieldValue('keys');
-    const formItems = keys.map((k, index) => {
-    return (
-      <FormItem
-        {...(index === 0 ? formItemLayout : formItemLayoutWithOutLabel)}
-        label={index === 0 ? 'Handles' : ''}
-        required={false}
-        key={k}
-      >
-        {getFieldDecorator(`names-${k}`, {
-          validateTrigger: ['onChange', 'onBlur'],
-          rules: [{
-            required: true,
-            whitespace: true,
-            message: "Please input twitter handle or delete this field.",
-          }],
-        })(
-          <Input placeholder="twitter handle" style={{ width: '60%', marginRight: 8 }} />
-        )}
-        {keys.length > 1 ? (
-          <Icon
-            className="dynamic-delete-button"
-            type="minus-circle-o"
-            disabled={keys.length === 1}
-            onClick={() => this.remove(k)}
-          />
-        ) : null}
-      </FormItem>
-    );
-  });
-
+    //handles form
+    var { newvalue, current_handles, removed_handles } = this.state;
     return (
       <div>
         <Tabs tabBarExtraContent={operations}
@@ -158,27 +97,40 @@ class tweets extends Component {
           ]}
         >
           <Divider>Twitter Handles</Divider>
-          <Form onSubmit={this.handleSubmit}>
-            {formItems}
-            <FormItem {...formItemLayoutWithOutLabel}>
-              <Button type="dashed" onClick={this.add} style={{ width: '60%' }}>
-                <Icon type="plus" /> Add field
-              </Button>
-            </FormItem>
-            <FormItem {...formItemLayoutWithOutLabel}>
-              <Button type="primary" htmlType="submit">Submit</Button>
-            </FormItem>
-          </Form>
+          <List
+            className="demo-loadmore-list"
+            itemLayout="horizontal"
+            dataSource={current_handles}
+            renderItem={item => (
+              <List.Item actions={[<Button onClick={() => {
+                current_handles = current_handles.filter(e => e !== item);
+                removed_handles.push(item);
+                this.setState({current_handles,removed_handles});
 
+              }} type="danger">Remove</Button>]}>
+                <List.Item.Meta
+                  title={item}
+                />
+              </List.Item>
+            )}
+          />
+          <form>
+            <input style={{margin: '3%'}}
+              placeholder='Enter a valid handle'
+              value={newvalue}
+              onChange={this.handleValue}
+              type='text'>
+            </input>
+            <Button onClick={this.handleAdd}
+              type="primary">Add Handles
+            </Button>
+          </form>
           <Divider>Notifications</Divider>
           <CheckboxGroup options={plainOptions} defaultValue={['Text']} onChange={this.onChange} />
-
         </Modal>
 
       </div>
     );
   }
 }
-const Wraptweets = Form.create()(tweets);
-
-export default Wraptweets;
+export default tweets;
