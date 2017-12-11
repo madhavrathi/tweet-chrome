@@ -23,6 +23,19 @@ class tweets extends Component {
   }
   componentDidMount() {
     this.getTweetsfromDb();
+    this.getHandlesfromDB();
+  }
+  getHandlesfromDB(){
+    $.ajax({
+            url: 'https://twitter-chrome-server.herokuapp.com/gethandles',
+            method: 'GET',
+            crossDomain: true,
+            dataType: 'json'
+        }).done(function (res) {
+            this.setState({
+              current_handles: res.handles
+            })
+        }.bind(this))
   }
   getTweetsfromDb(){
     $.ajax({
@@ -44,7 +57,7 @@ class tweets extends Component {
     });
   }
   handleOk = () => {
-    this.setState({ loading: true });
+    var { removed_handles, new_handles  } = this.state;
     console.log('New: '+this.state.new_handles);
     console.log('Removed: '+this.state.removed_handles);
     $.ajax({
@@ -53,17 +66,19 @@ class tweets extends Component {
             crossDomain: true,
             dataType: 'json',
             data: {
-                'new_handles': this.state.new_handles,
-                'removed_handles': this.state.removed_handles
+              "new_handles": new_handles,
+              "removed_handles": removed_handles
             }
-        }).done(function (response) {
-            console.log(response);
-            this.getTweetsfromDb();
+        }).done(function (res) {
+            console.log(res)
+            this.setState({
+              textTweets: res.existing_tweets.text,
+              imageTweets: res.existing_tweets.images,
+              textImageTweets: res.existing_tweets.text_images,
+              current_handles: res.handles,
+              visible: false
+            });
         }.bind(this))
-
-    setTimeout(() => {
-      this.setState({ loading: false, visible: false });
-    }, 3000);
   }
   handleCancel = () => {
     this.setState({ visible: false });
@@ -75,7 +90,9 @@ class tweets extends Component {
   //Form Controls
   handleAdd = (e) => {
     var { newvalue, current_handles, new_handles  } = this.state;
-    if(newvalue !== ''){
+    var ans = current_handles.indexOf(newvalue);
+    console.log('Already in handles');
+    if( ans === -1 && newvalue !== '' ){
       new_handles.push(newvalue);
       current_handles.push(newvalue);
       this.setState({current_handles,new_handles,newvalue:''});
