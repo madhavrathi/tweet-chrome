@@ -38,18 +38,35 @@ class tweets extends Component {
         }.bind(this))
   }
   getTweetsfromDb(){
+    var { textTweets, imageTweets, textImageTweets } = this.state;
     $.ajax({
             url: 'https://twitter-chrome-server.herokuapp.com/get_tweets',
             method: 'GET',
             crossDomain: true,
             dataType: 'json'
         }).done(function (response) {
-            this.setState({
-              textTweets: response.text,
-              imageTweets: response.images,
-              textImageTweets: response.text_images
-            })
-        }.bind(this))
+              textTweets = response.text;
+              imageTweets = response.images;
+              textImageTweets = response.text_images;
+              textTweets.sort(function(a,b) {
+                a = new Date(a.time);
+                b = new Date(b.time);
+                return (b - a);
+              });
+              console.log(textTweets)
+              imageTweets.sort(function(a,b) {
+                a = new Date(a.time);
+                b = new Date(b.time);
+                return (b - a);
+              });
+              textImageTweets.sort(function(a,b) {
+                a = new Date(a.time);
+                b = new Date(b.time);
+                return (b - a);
+              });
+              this.setState({textTweets,imageTweets,textImageTweets});
+        }.bind(this));
+    console.log(textTweets)
   }
   showModal = () => {
     this.setState({
@@ -57,6 +74,7 @@ class tweets extends Component {
     });
   }
   handleOk = () => {
+    var { textTweets, imageTweets, textImageTweets } = this.state;
     var { removed_handles, new_handles  } = this.state;
     console.log('New: '+this.state.new_handles);
     console.log('Removed: '+this.state.removed_handles);
@@ -70,14 +88,28 @@ class tweets extends Component {
               "removed_handles": removed_handles
             }
         }).done(function (res) {
-            console.log(res)
-            this.setState({
-              textTweets: res.existing_tweets.text,
-              imageTweets: res.existing_tweets.images,
-              textImageTweets: res.existing_tweets.text_images,
-              current_handles: res.handles,
-              visible: false
+            //console.log(res)
+            textTweets = res.existing_tweets.text;
+            imageTweets = res.existing_tweets.images;
+            textImageTweets = res.existing_tweets.text_images;
+            textTweets.sort(function(a,b) {
+              a = new Date(a.time);
+              b = new Date(b.time);
+              return (b - a);
             });
+            console.log(textTweets)
+            imageTweets.sort(function(a,b) {
+              a = new Date(a.time);
+              b = new Date(b.time);
+              return (b - a);
+            });
+            textImageTweets.sort(function(a,b) {
+              a = new Date(a.time);
+              b = new Date(b.time);
+              return (b - a);
+            });
+            this.setState({textTweets,imageTweets,textImageTweets,current_handles: res.handles,visible: false});
+
         }.bind(this))
   }
   handleCancel = () => {
