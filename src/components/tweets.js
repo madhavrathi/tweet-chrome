@@ -108,7 +108,11 @@ class tweets extends Component {
               b = new Date(b.time);
               return (b - a);
             });
-            this.setState({textTweets,imageTweets,textImageTweets,current_handles: res.handles,visible: false});
+            this.setState({textTweets,
+              imageTweets:imageTweets,
+              textImageTweets:textImageTweets,
+              current_handles: res.handles,
+              visible: false});
 
         }.bind(this))
   }
@@ -123,12 +127,11 @@ class tweets extends Component {
   handleAdd = (e) => {
     var { newvalue, current_handles, new_handles  } = this.state;
     var ans = current_handles.indexOf(newvalue);
-    console.log('Already in handles');
     if( ans === -1 && newvalue !== '' ){
       new_handles.push(newvalue);
       current_handles.push(newvalue);
       this.setState({current_handles,new_handles,newvalue:''});
-    }
+    }else{console.log('Already in handles')}
   }
   handleValue = (e) => {
     this.setState({newvalue: e.target.value});
