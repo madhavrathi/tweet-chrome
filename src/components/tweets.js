@@ -9,6 +9,9 @@ class tweets extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      textTweets: [],
+      imageTweets: [],
+      textImageTweets: [],
       loading: false,
       visible: false,
       checked: '',
@@ -19,6 +22,21 @@ class tweets extends Component {
     };
   }
   componentDidMount() {
+    this.getTweetsfromDb();
+  }
+  getTweetsfromDb(){
+    $.ajax({
+            url: 'https://twitter-chrome-server.herokuapp.com/get_tweets',
+            method: 'GET',
+            crossDomain: true,
+            dataType: 'json'
+        }).done(function (response) {
+            this.setState({
+              textTweets: response.text,
+              imageTweets: response.images,
+              textImageTweets: response.text_images
+            })
+        }.bind(this))
   }
   showModal = () => {
     this.setState({
@@ -32,6 +50,7 @@ class tweets extends Component {
     $.ajax({
             url: 'https://twitter-chrome-server.herokuapp.com/handles',
             method: 'GET',
+            crossDomain: true,
             dataType: 'json',
             data: {
                 'new_handles': this.state.new_handles,
@@ -39,7 +58,8 @@ class tweets extends Component {
             }
         }).done(function (response) {
             console.log(response);
-        })
+            this.getTweetsfromDb();
+        }.bind(this))
 
     setTimeout(() => {
       this.setState({ loading: false, visible: false });
@@ -72,14 +92,72 @@ class tweets extends Component {
     const TabPane = Tabs.TabPane;
     const operations = <Button onClick={this.showModal}>Settings</Button>;
     //handles form
-    var { newvalue, current_handles, removed_handles } = this.state;
+    var { textTweets, imageTweets, textImageTweets, newvalue, current_handles, removed_handles } = this.state;
     return (
       <div>
         <Tabs tabBarExtraContent={operations}
           defaultActiveKey="1">
-          <TabPane tab="Text" key="1">Content of Tab Pane 1</TabPane>
-          <TabPane tab="Images" key="2">Content of Tab Pane 2</TabPane>
-          <TabPane tab="Text and Images" key="3">Content of Tab Pane 3</TabPane>
+          <TabPane style={{padding:'20px'}}
+            tab="Text" key="1">
+            <List
+              itemLayout="horizontal"
+              dataSource={textTweets}
+              renderItem={item => (
+                <List.Item>
+                  <List.Item.Meta
+                    title={<a target='_blank' href={`https://twitter.com/${item.handle}`}>{item.handle}</a>}
+                    description={item.text}
+                  />
+                  <div>{item.time.substring(0,18)}</div>
+                </List.Item>
+              )}
+            />
+          </TabPane>
+          <TabPane style={{padding:'20px'}}
+            tab="Images" key="2">
+            <List
+              itemLayout="horizontal"
+              dataSource={imageTweets}
+              renderItem={item => (
+                <List.Item>
+                  <List.Item.Meta
+                    title={<a target='_blank' href={`https://twitter.com/${item.handle}`}>{item.handle}</a>}
+                    description={<div>
+                      {item.media.map((d,i) =>
+                          (<img key={i} style={{width:'30%', margin:'2px'}}
+                            alt='media_image' src={d.media_url_https}>
+                          </img>)
+                      )}
+                    </div>
+                    }
+                  />
+                  <div>{item.time.substring(0,18)}</div>
+                </List.Item>
+              )}
+            /></TabPane>
+          <TabPane style={{padding:'20px'}}
+            tab="Text and Images" key="3">
+            <List
+              itemLayout="horizontal"
+              dataSource={textImageTweets}
+              renderItem={item => (
+                <List.Item>
+                  <List.Item.Meta
+                    title={<a target='_blank' href={`https://twitter.com/${item.handle}`}>{item.handle}</a>}
+                    description={<div>
+                      <p>{item.text}</p>
+                      {item.media.map((d,i) =>
+                          (<img key={i} style={{width:'30%', margin:'2px'}}
+                            alt='media_image' src={d.media_url_https}>
+                          </img>)
+                      )}
+                    </div>
+                    }
+                  />
+                  <div>{item.time.substring(0,18)}</div>
+                </List.Item>
+              )}
+            /></TabPane>
         </Tabs>
 
         {/*Modals*/}
