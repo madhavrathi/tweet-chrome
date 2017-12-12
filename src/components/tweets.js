@@ -122,7 +122,7 @@ class tweets extends Component {
         }, 3000);
   }
   handleCancel = () => {
-    this.setState({ visible: false });
+    this.setState({ visible: false, removed_handles: [], new_handles: [] });
   }
   onChange = (checkedValues) => {
     this.setState({checked: checkedValues});
