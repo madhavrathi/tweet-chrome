@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import $ from 'jquery';
 import { Tabs } from 'antd';
-import { Modal, Button, Divider, Checkbox, List, } from 'antd';
+import { Modal, Button, Divider, Checkbox, List, notification } from 'antd';
 const CheckboxGroup = Checkbox.Group;
-
 
 class tweets extends Component {
   constructor(props) {
@@ -22,6 +21,25 @@ class tweets extends Component {
     };
   }
   componentDidMount() {
+    setInterval(() => {
+
+      $.ajax({
+              url: 'http://localhost:5000/newtweet',
+              method: 'GET',
+              crossDomain: true,
+          }).done(function (res) {
+            if(res !== 'none'){
+              notification.open({
+                message: 'Notification',
+                description: `${res} tweet`,
+                duration: '3.0',
+              })
+              this.getTweetsfromDb();
+            }
+          }.bind(this))
+
+    }, 3000);
+
     this.getTweetsfromDb();
     this.getHandlesfromDB();
   }
