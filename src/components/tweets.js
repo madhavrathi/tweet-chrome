@@ -74,6 +74,7 @@ class tweets extends Component {
     });
   }
   handleOk = () => {
+    this.setState({loading:true})
     var { textTweets, imageTweets, textImageTweets } = this.state;
     var { removed_handles, new_handles  } = this.state;
     console.log('New: '+this.state.new_handles);
@@ -111,8 +112,10 @@ class tweets extends Component {
             this.setState({textTweets,
               imageTweets:imageTweets,
               textImageTweets:textImageTweets,
-              current_handles: res.handles,
-              visible: false});
+              current_handles: res.handles});
+            setTimeout(() => {
+              this.setState({loading: false,visible: false});
+            }, 3000);
 
         }.bind(this))
   }
