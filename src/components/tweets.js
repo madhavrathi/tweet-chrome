@@ -110,15 +110,16 @@ class tweets extends Component {
               b = new Date(b.time);
               return (b - a);
             });
-            this.setState({textTweets,
+
+            this.setState({textTweets: textTweets,
               imageTweets:imageTweets,
               textImageTweets:textImageTweets,
               current_handles: res.handles});
-            setTimeout(() => {
-              this.setState({loading: false,visible: false});
-            }, 3000);
 
         }.bind(this))
+        setTimeout(() => {
+          this.setState({loading: false,visible: false,removed_handles: [],new_handles: []});
+        }, 3000);
   }
   handleCancel = () => {
     this.setState({ visible: false });
@@ -147,7 +148,7 @@ class tweets extends Component {
     const TabPane = Tabs.TabPane;
     const operations = <Button onClick={this.showModal}>Settings</Button>;
     //handles form
-    var { textTweets, imageTweets, textImageTweets, newvalue, current_handles, removed_handles } = this.state;
+    var { newvalue, current_handles, removed_handles } = this.state;
     return (
       <div>
         <Tabs tabBarExtraContent={operations}
@@ -156,7 +157,7 @@ class tweets extends Component {
             tab="Text" key="1">
             <List
               itemLayout="horizontal"
-              dataSource={textTweets}
+              dataSource={this.state.textTweets}
               renderItem={item => (
                 <List.Item>
                   <List.Item.Meta
@@ -172,7 +173,7 @@ class tweets extends Component {
             tab="Images" key="2">
             <List
               itemLayout="horizontal"
-              dataSource={imageTweets}
+              dataSource={this.state.imageTweets}
               renderItem={item => (
                 <List.Item>
                   <List.Item.Meta
@@ -194,7 +195,7 @@ class tweets extends Component {
             tab="Text and Images" key="3">
             <List
               itemLayout="horizontal"
-              dataSource={textImageTweets}
+              dataSource={this.state.textImageTweets}
               renderItem={item => (
                 <List.Item>
                   <List.Item.Meta
