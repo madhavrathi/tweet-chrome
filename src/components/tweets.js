@@ -24,7 +24,7 @@ class tweets extends Component {
     setInterval(() => {
 
       $.ajax({
-              url: 'http://localhost:5000/newtweet',
+              url: 'https://twitter-chrome-server.herokuapp.com/newtweet',
               method: 'GET',
               crossDomain: true,
           }).done(function (res) {
