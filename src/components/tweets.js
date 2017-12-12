@@ -32,6 +32,7 @@ class tweets extends Component {
             crossDomain: true,
             dataType: 'json'
         }).done(function (res) {
+          console.log(res)
             this.setState({
               current_handles: res.handles
             })
@@ -89,7 +90,7 @@ class tweets extends Component {
               "removed_handles": removed_handles
             }
         }).done(function (res) {
-            //console.log(res)
+            console.log(res)
             textTweets = res.existing_tweets.text;
             imageTweets = res.existing_tweets.images;
             textImageTweets = res.existing_tweets.text_images;
@@ -129,8 +130,7 @@ class tweets extends Component {
   //Form Controls
   handleAdd = (e) => {
     var { newvalue, current_handles, new_handles  } = this.state;
-    var ans = current_handles.indexOf(newvalue);
-    if( ans === -1 && newvalue !== '' ){
+    if( (current_handles.indexOf(newvalue) === -1 || current_handles.length!==0) && newvalue !== '' ){
       new_handles.push(newvalue);
       current_handles.push(newvalue);
       this.setState({current_handles,new_handles,newvalue:''});
